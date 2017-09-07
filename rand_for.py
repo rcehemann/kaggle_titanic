@@ -9,7 +9,8 @@ Created on Thu Sep 07 13:38:34 2017
 #############################################
 import pandas as pd
 import seaborn as sns
-from sklearn import svm, cross_validation
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import cross_validation
 
 ############################################
 #               Cleaning data
@@ -18,7 +19,6 @@ from sklearn import svm, cross_validation
 # import data set
 df = pd.read_csv('train.csv')
 testset  = pd.read_csv('test.csv')
-
 
 # first remove name, cabins and tickets
 df.drop('Name',        axis=1, inplace=True)
@@ -50,9 +50,8 @@ df['Embarked'] = df['Embarked'].fillna(0)
 ############################################
 #               Modelling
 ############################################
-
-# time to train a RBF kernel nonlinear SVM
-clf = svm.SVC(kernel='rbf',verbose=True)
+# train a random forest
+clf = RandomForestClassifier(max_depth=3, random_state=0)
 X = df.drop(['Survived', 'PassengerId'], axis=1).values
 Y = df['Survived'].values
 
@@ -62,13 +61,14 @@ CV10_score = clf.fit(X_train, Y_train).score(X_test, Y_test)
 print "Cross-validation score:", CV10_score
 
 # reset classifier and fit to whole data set
-clf = svm.SVC(kernel='rbf',verbose=True)
+clf = RandomForestClassifier(max_depth=3, random_state=0)
 clf.fit(X, Y)
-#print clf.get_params()
 
 ############################################
 #               Testing
 ############################################
+
+#print df['Survived'].values
 
 # trim useless values from test set
 testset.drop('Name',        axis=1, inplace=True)
@@ -100,4 +100,5 @@ testset.fillna(testset.mean(), inplace=True)
 predictions = clf.predict(testset.drop(['PassengerId'],axis=1).values)
 
 output = pd.DataFrame({'PassengerId':testset['PassengerId'], 'Survived':predictions})
-output.to_csv('rbf_svm.csv', index=False)
+#print output
+output.to_csv('ran_for.csv', index=False)
